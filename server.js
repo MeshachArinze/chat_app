@@ -14,12 +14,18 @@ app.get("/", (req, res) => {
 });
 
 io.on("connection", (socket) => {
+  console.log("a user connected");
+  // Broadcast to all connected clients that a new user has joined
+  socket.broadcast.emit("user joined", "A new user has joined the chat");
+
   socket.on("chat message", (msg) => {
     io.emit("chat message", msg);
   });
-  
+
   socket.on("disconnect", () => {
     console.log("user disconnected");
+    // Broadcast to all connected clients that a user has left
+    io.emit('user left', 'A user has left the chat');
   });
 });
 
