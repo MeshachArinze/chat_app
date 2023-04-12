@@ -12,6 +12,8 @@ const users = {};
 
 
 
+app.use(express.static("public"));
+
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/index.html");
 });
@@ -19,16 +21,22 @@ app.get("/", (req, res) => {
 io.on("connection", (socket) => {
   console.log("a user connected");
   // Broadcast to all connected clients that a new user has joined
-  socket.broadcast.emit("user joined", "A new user has joined the chat");
+   socket.on("nickname", (nickname) => {
+     users[socket.id] = nickname;
+     socket.broadcast.emit("user joined", `${nickname} has joined the chat`);
+   });
 
-  socket.on("chat message", (msg) => {
-    io.emit("chat message", msg);
-  });
+    socket.on("chat message", (msg) => {
+      console.log("message: " + msg);
+      const nickname = users[socket.id];
+      io.emit("chat message", { nickname, message: msg });
+    });
 
   socket.on("disconnect", () => {
     console.log("user disconnected");
-    // Broadcast to all connected clients that a user has left
-    io.emit('user left', 'A user has left the chat');
+    const nickname = users[socket.id];
+    socket.broadcast.emit("user left", `${nickname} has left the chat`);
+    delete users[socket.id];
   });
 });
 
