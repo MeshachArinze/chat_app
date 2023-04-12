@@ -8,6 +8,9 @@ const { Server } = require("socket.io");
 
 const io = new Server(server);
 
+const users = {};
+
+
 
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/index.html");
